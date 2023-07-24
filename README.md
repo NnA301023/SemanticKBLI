@@ -1,5 +1,5 @@
 # SemanticKBLI
-Semantic Search Classification using Text Embedding &amp; ElasticSearch
+Semantic Search Classification with Transformers and FastAPI
 
 # Tutorial Run Service
 1. Create docker container on local.
