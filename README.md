@@ -10,6 +10,10 @@ docker build -t fastapi-service .
 ```
 docker run -d -p 8000:8000 --name fastapi-container --restart unless-stopped fastapi-service
 ```
+3. Access Swagger Documentation via
+```
+localhost:8000/docs
+```
 
 # TODO
 - [x] Create Boilerplate System
