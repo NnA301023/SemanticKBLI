@@ -15,7 +15,10 @@ def send_logger(request: Request, response: dict, database: object, collection: 
         "method" : request.method, 
         "url" : request.url.path, 
         "headers" : dict(request.headers), 
-        "client_ip" : request.client.host  
+        "client_ip" : request.client.host, 
+        "product_name" : response["body"]["nama_produk"],
+        "prediction_type_product" : response["body"]["prediksi_jenis"],
+        "prediction_kbli_product" : response["body"]["prediksi_kbli"]
     }
     document = database.collection(collection).document()
     document.set(schema_logs)
