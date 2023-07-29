@@ -1,11 +1,13 @@
 import uvicorn
 from fastapi import FastAPI, Request
+from model import load_corpus, search
 from logger import send_logger, connect_firebase
 from fastapi.middleware.cors import CORSMiddleware
 
 # Define global variable
 app = FastAPI()
 database = connect_firebase()
+model, mapping_sd, index_sd, mapping_reg, index_reg = load_corpus()
 
 # Enable Cross-Origin Resource Sharing (CORS) for all origins
 origins = ["*"]
@@ -21,15 +23,28 @@ app.add_middleware(
 @app.middleware("http")
 async def logger(request: Request, call_next: object):
     response = await call_next(request)
-    send_logger(request, response, database)
     return response 
 
-@app.post("/predict")
-async def classify_text(text: str):
+@app.post("/self-declare/predict")
+async def classify_text(text: str, request: Request):
     response = {"message" : "Success", "status_code" : 200, "body" : []}
-    response["body"].append({"nama_produk" : text})
-    response["body"].append({"prediksi_jenis" : "Misalnya Serealia"})
-    response["body"].append({"prediksi_kbli" : "12345"})
+    if text != "":
+        response["body"] = search(text, index_sd, model, mapping_sd)
+    else: 
+        response["message"] = "text blank"
+        response["status_code"] = 404
+    send_logger(request, response, database)
+    return response
+
+@app.post("/reguler/predict")
+async def classify_text(text: str, request: Request):
+    response = {"message" : "Success", "status_code" : 200, "body" : []}
+    if text != "":
+        response["body"] = search(text, index_reg, model, mapping_reg)
+    else: 
+        response["message"] = "text blank"
+        response["status_code"] = 404
+    send_logger(request, response, database)
     return response
 
 if __name__ == "__main__":
