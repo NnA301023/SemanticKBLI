@@ -23,9 +23,3 @@ docker run -d -p 8000:8000 --name fastapi-container --restart unless-stopped fas
 ```
 localhost:8000/docs
 ```
-
-# TODO
-- [x] Create Boilerplate System
-- [x] Research Semantic Algorithm
-- [x] Implement Logging System
-- [x] Test on Bulk Request

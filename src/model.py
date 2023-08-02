@@ -1,13 +1,14 @@
 import json
 import faiss 
+import openai
 from typing import List
 from sentence_transformers import SentenceTransformer
 
 
+OPENAI_KEY = json.load(open("./secret/openai-cred.json", "r"))["OPENAI_KEY"]
+openai.api_key = OPENAI_KEY
+
 def load_corpus():
-    """
-    Load pretrained model and corpus, while take a bit longer in first running.
-    """
     model = SentenceTransformer("msmarco-MiniLM-L-6-v3")
     data_maps_self_declare = json.load(open('corpus/self-declare.json', 'r'))
     index_self_declare = faiss.read_index("corpus/self-declare.index")
@@ -18,8 +19,6 @@ def load_corpus():
         data_maps_reguler, index_reguler
     ) 
 
-
-# Create function to indexing results
 def fetch_product(idx: int, query: str, df: List):
     result = {}
     result["nama_produk"] = query
@@ -41,4 +40,36 @@ def search(query: str, index_vector: object, model_embedding: object, df: List):
     selected_idx = index_vector.search(query_vector, k = 1)
     selected_idx = selected_idx[1].tolist()[0][0]
     result = [fetch_product(selected_idx, query, df)]
+    return result
+
+def _set_prompt(description: str):
+    custom_prompt = \
+    f"""
+    Ekstraksi nama bahan dalam deskripsi pemrosesan bahan, dengan contoh cukup menampilkan di bagian result dengan menghapus apabila ada bahan yang duplikat. Tanpa menggunakan embel-embel kata penjelasan.
+    
+    Dengan contoh deskripsi dan result
+    Deskripsi: Produk dibuat dengan cara : 1. Periapan alat dan bahan 2. Pembersihan dan pengupasan bahan (singkong) 3. Penggilingan singkong 4. Pencampuran dengan tepung tapioka, terigu dan garam 5. Pencetakan dan penggorengan 6. Pendinginan, packing dan pemasangan label 
+    Result : "singkong", "tepung tapioka", "tepung terigu", "garam"
+
+    Cukup identifikasi pada deskripsi dibawah ini.
+    Deskripsi: {description}
+    Result : 
+    """
+    return custom_prompt
+
+def _parse_result(result: str):
+    return result
+
+def detect_bahan(description: str):
+    result = {}
+    result["step_product"] = description
+    try:
+        response = openai.ChatCompletion.create(
+            model = "gpt-3.5-turbo", messages = [{"role" : "user", "content" : _set_prompt(description)}], 
+            temperature = 0, max_tokens = 256, top_p = 1.0, frequency_penalty = 0.0, presence_penalty = 0.0
+        )
+        response = _parse_result(response["choices"][0]["message"]["content"])
+    except Exception: 
+        response = ""
+    result["ingredient_detected"] = response
     return result
