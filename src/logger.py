@@ -19,8 +19,12 @@ def send_logger(request: Request, response: Response, database: object, collecti
     }
 
     if is_bahan:
-        schema_logs["step_product"] = response["body"][0]["step_product"]
-        schema_logs["ingredient_detected"] = response["body"][0]["ingredient_detected"]
+        try:
+            schema_logs["step_product"] = response["body"][0]["step_product"]
+            schema_logs["ingredient_detected"] = response["body"][0]["ingredient_detected"]
+        except Exception as E:
+            schema_logs["step_product"] = f"Error: {E}"
+            schema_logs["ingredient_detected"] = []
     else:
         schema_logs["product_name"]            = response["body"][0]["nama_produk"]
         schema_logs["prediction_type_product"] = response["body"][0]["prediksi_jenis"]
