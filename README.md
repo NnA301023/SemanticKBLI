@@ -8,7 +8,7 @@ Semantic Search Classification with Transformers and FastAPI
 | Mei         | Self Declare   | AutoML C# | 56.461                | 48.787       |
 | Juni        | Self Declare   | AutoML C# | 56.461                | 83.041       |
 | Juni        | Self Declare with Enrichment  | S-Bert KNN    | 99.477                | 98.929       |
-| Juli        | Reguler        | S-Bert KNN    | 98.473                | 98.473       |
+| Juli        | Reguler        | S-Bert KNN    | 100.00                | 97.841       |
 
 # Tutorial Run Service
 1. Create docker container on local.
