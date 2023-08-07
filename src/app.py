@@ -57,7 +57,7 @@ async def classify_text_reguler(text: str, request: Request):
 @app.post("/reguler/check-bahan/")
 async def detect_nama_bahan(text: str, request: Request):
     if text != "":
-        response["body"].append(detect_bahan(text))
+        response["body"] = [detect_bahan(text)]
     else: 
         response["message"] = "text blank"
         response["status_code"] = 404
