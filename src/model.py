@@ -51,7 +51,7 @@ def _set_prompt(description: str):
     Deskripsi: Produk dibuat dengan cara : 1. Periapan alat dan bahan 2. Pembersihan dan pengupasan bahan (singkong) 3. Penggilingan singkong 4. Pencampuran dengan tepung tapioka, terigu dan garam 5. Pencetakan dan penggorengan 6. Pendinginan, packing dan pemasangan label 
     Result : "singkong", "tepung tapioka", "tepung terigu", "garam"
 
-    Cukup identifikasi pada deskripsi dibawah ini.
+    Untuk hasil Result, Cukup identifikasi pada deskripsi dibawah ini dan hanya seputar bahan makanan atau minuman.
     Deskripsi: {description}
     Result : 
     """
