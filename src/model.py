@@ -1,7 +1,7 @@
 import json
 import faiss 
 import openai
-from typing import List
+from typing import List, Union
 from sentence_transformers import SentenceTransformer
 
 
@@ -46,14 +46,6 @@ def _set_prompt(description: str):
     custom_prompt = \
     f"""
     Ekstraksi nama bahan dalam deskripsi pemrosesan bahan, dengan contoh cukup menampilkan di bagian result dengan menghapus apabila ada bahan yang duplikat. Tanpa menggunakan embel-embel kata penjelasan.
-    
-    Dengan contoh deskripsi dan result
-    Deskripsi: Produk dibuat dengan cara : 1. Periapan alat dan bahan 2. Pembersihan dan pengupasan bahan (singkong) 3. Penggilingan singkong 4. Pencampuran dengan tepung tapioka, terigu dan garam 5. Pencetakan dan penggorengan 6. Pendinginan, packing dan pemasangan label 
-    Result : "singkong", "tepung tapioka", "tepung terigu", "garam"
-
-    Deskripsi: kue dioven menggunakan loyang, kacang topping digoreng menggunakan wajan
-    Result : "kue", "kacang"
-
     Untuk Result, Cukup identifikasi pada deskripsi dibawah ini dan Result hanya seputar bahan makanan atau minuman.
     Deskripsi: {description}
     Result : 
@@ -75,4 +67,48 @@ def detect_bahan(description: str):
     except Exception: 
         response = ""
     result["ingredient_detected"] = response
+    return result
+
+def prompt_validation(product_name: str, ingredient: str = ""):
+    custom_prompt = \
+    f"""
+    Tentukan kesesuaian sebuah bahan dengan nama produk berdasarkan informasi bahan, dengan hasil format cukup:
+
+    nama_produk: {product_name}
+    bahan: {ingredient}
+
+    Untuk response cukup isi dengan format dibawah.
+    Kesesuaian_produk: [Jawaban Anda: "sesuai" atau "tidak sesuai"]
+    Alasan: [Jelaskan alasan mengapa Anda menganggap bahan tersebut sesuai atau tidak sesuai dengan nama produk tersebut secara singkat.]
+    """
+    return custom_prompt
+
+def validation_parse_result(result: str):
+    is_valid, reason = result.split("\n")
+    is_valid = is_valid.split(": ")[-1]
+    reason = reason.split(": ")[-1]
+    return is_valid, reason
+
+def validation_product(product_name: str, ingredient: Union[str, None] = None):
+    ingredient_found = False
+    result = {"is_valid" : "", "reason" : ""}
+    corpus_ingredient = list(map(lambda x: x.lower(), ingredient.replace(", ", " ").lower().split()))
+    for word in product_name.split():
+        word = word.lower()
+        if word in corpus_ingredient:
+            result["is_valid"] = "sesuai"
+            result["reason"] = "main course is exist in ingredient"
+            ingredient_found = True
+            break 
+    if not ingredient_found:
+        try:
+            response = openai.ChatCompletion.create(
+                model = "gpt-3.5-turbo", messages = [{"role" : "user", "content" : prompt_validation(product_name, ingredient)}], 
+                temperature = 0, max_tokens = 1024, top_p = 1.0, frequency_penalty = 0.0, presence_penalty = 0.0
+            )
+            is_valid, reason = validation_parse_result(response["choices"][0]["message"]["content"])
+            result["is_valid"] = is_valid
+            result["reason"] = reason
+        except Exception: 
+            response = ""
     return result

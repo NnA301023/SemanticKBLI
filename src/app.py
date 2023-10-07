@@ -1,8 +1,9 @@
 import uvicorn
+from typing import Union
 from fastapi import FastAPI, Request
 from logger import send_logger, connect_firebase
 from fastapi.middleware.cors import CORSMiddleware
-from model import load_corpus, search, detect_bahan
+from model import load_corpus, search, detect_bahan, validation_product
 
 # Define global variable
 app = FastAPI()
@@ -63,6 +64,17 @@ async def detect_nama_bahan(text: str, request: Request):
         response["status_code"] = 404
     send_logger(request, response, database, is_bahan = True)
     return response
+
+@app.get("/expert-system/validation")
+async def validation_product_name(product_name: str, ingredients: Union[str, None] = None, step_creation: Union[str, None] = None):
+    if not ingredients is None and step_creation is None:
+        result = validation_product(product_name, ingredients)
+        response["body"] = [result]
+    else:
+        response["status_code"] = 401
+        response["message"] = "at least parameter one of ingredient or step_creation not null."
+    return response
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
