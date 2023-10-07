@@ -1,4 +1,5 @@
 import firebase_admin
+from typing import Union
 from datetime import datetime
 from fastapi import Request, Response
 from firebase_admin import credentials, firestore
@@ -31,6 +32,27 @@ def send_logger(request: Request, response: Response, database: object, collecti
         schema_logs["prediction_kbli_product"] = response["body"][0]["prediksi_kbli"]
         schema_logs["prediction_result"]       = response["body"][0]["message"]
         schema_logs["product_name_nearest"]    = response['body'][0]["nama_produk_terdekat"]
+
+    document = database.collection(collection).document()
+    document.set(schema_logs)
+
+def send_logger_validation(
+        request: Request, response: Response, database: object, collection: str = "logs",
+        product_name: str = "", ingredients: Union[str, None] = None, step_creation: Union[str, None] = None
+    ):
+    schema_logs = {
+        "datetime" : datetime.now().isoformat(), 
+        "method" : request.method, 
+        "url" : request.url.path, 
+        "headers" : dict(request.headers), 
+        "client_ip" : request.client.host
+    }
+
+    schema_logs["product_name"]  = product_name
+    schema_logs["ingredients"]   = ingredients
+    schema_logs["step_creation"] = step_creation
+    schema_logs["is_valid"] = response["body"][0]["is_valid"]
+    schema_logs["reason"]   = response["body"][0]["reason"]
 
     document = database.collection(collection).document()
     document.set(schema_logs)

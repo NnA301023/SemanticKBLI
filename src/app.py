@@ -68,8 +68,11 @@ async def detect_nama_bahan(text: str, request: Request):
 @app.get("/expert-system/validation")
 async def validation_product_name(product_name: str, ingredients: Union[str, None] = None, step_creation: Union[str, None] = None):
     if not ingredients is None and step_creation is None:
-        result = validation_product(product_name, ingredients)
-        response["body"] = [result]
+        if ingredients is None:
+            response["body"] = [{"is_valid" : "sesuai", "reason" : "main course is satisfied in step_creation"}]
+        else:
+            result = validation_product(product_name, ingredients)
+            response["body"] = [result]
     else:
         response["status_code"] = 401
         response["message"] = "at least parameter one of ingredient or step_creation not null."
