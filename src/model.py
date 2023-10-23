@@ -46,7 +46,7 @@ def _set_prompt(description: str):
     custom_prompt = \
     f"""
     Ekstraksi nama bahan dalam deskripsi pemrosesan bahan, dengan contoh cukup menampilkan di bagian result dengan menghapus apabila ada bahan yang duplikat. Tanpa menggunakan embel-embel kata penjelasan.
-    Untuk Result, Cukup identifikasi pada deskripsi dibawah ini dan Result hanya seputar bahan makanan atau minuman.
+    Untuk Result, Cukup identifikasi pada deskripsi dibawah ini dan Result hanya seputar bahan makanan atau minuman bukan kata kerja maupun kata benda.
     Deskripsi: {description}
     Result : 
     """
@@ -61,7 +61,7 @@ def detect_bahan(description: str):
     try:
         response = openai.ChatCompletion.create(
             model = "gpt-3.5-turbo", messages = [{"role" : "user", "content" : _set_prompt(description)}], 
-            temperature = 0, max_tokens = 256, top_p = 1.0, frequency_penalty = 0.0, presence_penalty = 0.0
+            temperature = 0, max_tokens = 4096, top_p = 1.0, frequency_penalty = 0.0, presence_penalty = 0.0
         )
         response = _parse_result(response["choices"][0]["message"]["content"])
     except Exception: 
